@@ -14,3 +14,8 @@ use "flask run" to start, configure UBAD to point at flask instance, enjoy.
 Manual tweaking required if not using CUDA GPUs.
 
 Remove / (modify to PCI = 0 if only 1 GPU) lines 15 & 16 for CPU support, as well as using tensorflow instead of tensorflow-gpu package in requirements.txt
+
+
+Credit for initial code & model goes to the AI Dungeon project. 
+
+"Infinite adventures await! http://www.aidungeon.io/"
