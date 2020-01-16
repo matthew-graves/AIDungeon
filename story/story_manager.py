@@ -6,6 +6,9 @@ from subprocess import Popen
 
 from story.utils import *
 
+from dapi.utils import console_print
+from dapi.utils import input
+from dapi.utils import get_num_options
 
 class Story:
     def __init__(

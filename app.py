@@ -1,14 +1,22 @@
-#!/usr/bin/env python3
+#!flask/bin/python
 import os
 import random
 import sys
 import time
 import argparse
 
+from flask import Flask, jsonify, abort
+from flask import make_response
+from flask import request
+
 from generator.gpt2.gpt2_generator import *
 from story import grammars
 from story.story_manager import *
 from story.utils import *
+
+from dapi.utils import console_print
+from dapi.utils import input
+from dapi.utils import get_num_options
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
@@ -21,8 +29,8 @@ parser.add_argument(
 
 
 def splash():
-    print("0) New Game\n1) Load Game\n")
-    choice = get_num_options(2)
+    # console_print("0) New Game\n1) Load Game\n")
+    choice = 0
 
     if choice == 1:
         return "load"
@@ -59,7 +67,7 @@ def select_game():
         data = yaml.safe_load(stream)
 
     # Random story?
-    print("Random story?")
+    console_print("Random story?")
     console_print("0) yes")
     console_print("1) no")
     choice = get_num_options(2)
@@ -68,7 +76,7 @@ def select_game():
         return random_story(data)
 
     # User-selected story...
-    print("\n\nPick a setting.")
+    # console_print("\n\nPick a setting.")
     settings = data["settings"].keys()
     for i, setting in enumerate(settings):
         print_str = str(i) + ") " + setting
@@ -84,7 +92,7 @@ def select_game():
 
     setting_key = list(settings)[choice]
 
-    print("\nPick a character")
+    console_print("\nPick a character")
     characters = data["settings"][setting_key]["characters"]
     for i, character in enumerate(characters):
         console_print(str(i) + ") " + character)
@@ -142,25 +150,22 @@ def instructions():
     text += '\n Enter actions starting with a verb ex. "go to the tavern" or "attack the orc."'
     text += '\n To speak enter \'say "(thing you want to say)"\' or just "(thing you want to say)" '
     text += "\n\nThe following commands can be entered for any action: "
-    text += '\n  "/revert"   Reverts the last action allowing you to pick a different action.'
-    text += '\n  "/quit"     Quits the game and saves'
-    text += '\n  "/reset"    Starts a new game and saves your current one'
-    text += '\n  "/restart"  Starts the game from beginning with same settings'
-    text += '\n  "/save"     Makes a new save of your game and gives you the save ID'
-    text += '\n  "/load"     Asks for a save ID and loads the game if the ID is valid'
-    text += '\n  "/print"    Prints a transcript of your adventure (without extra newline formatting)'
-    text += '\n  "/help"     Prints these instructions again'
-    text += '\n  "/censor off/on" to turn censoring off or on.'
+    text += '\n  "!revert"   Reverts the last action allowing you to pick a different action.'
+    text += '\n  "!quit"     Quits the game and saves'
+    text += '\n  "!reset"    Starts a new game and saves your current one'
+    text += '\n  "!restart"  Starts the game from beginning with same settings'
+    text += '\n  "!save"     Makes a new save of your game and gives you the save ID'
+    text += '\n  "!load"     Asks for a save ID and loads the game if the ID is valid'
+    text += '\n  "!print"    console_prints a transcript of your adventure (without extra newline formatting)'
+    text += '\n  "!help"     console_prints these instructions again'
+    text += '\n  "!censor off/on" to turn censoring off or on.'
     return text
 
 
-def play_aidungeon_2(args):
+def play_aidungeon_2():
     """
     Entry/main function for starting AIDungeon 2
 
-    Arguments:
-        args (namespace): Arguments returned by the
-                          ArgumentParser
     """
 
     console_print(
@@ -171,25 +176,25 @@ def play_aidungeon_2(args):
 
     upload_story = True
 
-    print("\nInitializing AI Dungeon! (This might take a few minutes)\n")
-    generator = GPT2Generator(force_cpu=args.cpu)
+    console_print("\nInitializing AI Dungeon! (This might take a few minutes)\n")
+    generator = GPT2Generator(force_cpu=False)
     story_manager = UnconstrainedStoryManager(generator)
-    print("\n")
+    #console_print("\n")
 
     with open("opening.txt", "r", encoding="utf-8") as file:
         starter = file.read()
-    print(starter)
+    console_print(starter)
 
     while True:
         if story_manager.story != None:
             story_manager.story = None
 
         while story_manager.story is None:
-            print("\n\n")
+            #console_print("\n\n")
             splash_choice = splash()
 
             if splash_choice == "new":
-                print("\n\n")
+                #console_print("\n\n")
                 (
                     setting_key,
                     character_key,
@@ -207,12 +212,12 @@ def play_aidungeon_2(args):
                     )
 
                 console_print(instructions())
-                print("\nGenerating story...")
+                console_print("\nGenerating story...")
 
                 result = story_manager.start_new_story(
                     prompt, context=context, upload_story=upload_story
                 )
-                print("\n")
+                console_print("\n")
                 console_print(result)
 
             else:
@@ -220,13 +225,13 @@ def play_aidungeon_2(args):
                 result = story_manager.load_new_story(
                     load_ID, upload_story=upload_story
                 )
-                print("\nLoading Game...\n")
+                console_print("\nLoading Game...\n")
                 console_print(result)
 
         while True:
             sys.stdin.flush()
             action = input("> ").strip()
-            if len(action) > 0 and action[0] == "/":
+            if len(action) > 0 and action[0] == "!":
                 split = action[1:].split(" ")  # removes preceding slash
                 command = split[0].lower()
                 args = split[1:]
@@ -297,8 +302,8 @@ def play_aidungeon_2(args):
                     console_print(result)
 
                 elif command == "print":
-                    print("\nPRINTING\n")
-                    print(str(story_manager.story))
+                    console_print("\nPRINTING\n")
+                    console_print(str(story_manager.story))
 
                 elif command == "revert":
                     if len(story_manager.story.actions) == 0:
@@ -378,7 +383,54 @@ def play_aidungeon_2(args):
                     console_print(result)
 
 
-if __name__ == "__main__":
-    args = parser.parse_args()
-    print("args are: " + str(args))
-    play_aidungeon_2(args)
+app = Flask(__name__)
+
+
+@app.route('/start')
+def index():
+    play_aidungeon_2()
+    return 200
+
+@app.route('/api/pending_server_actions', methods=['GET','POST'])
+def pending_server_actions():
+    global pending_server_actions_list
+    if request.method == 'GET':
+        if pending_server_actions_list:
+            current_server_actions = pending_server_actions_list
+            pending_server_actions_list = []
+            return jsonify(current_server_actions)
+        abort(404)
+    if request.method == 'POST':
+        if not request.json or not 'response' in request.json:
+             return '[{"response": "Still Generating..."}]'
+        pending_server_actions_list.append(request.json)
+        return request.json.get('response','')
+
+@app.route('/api/pending_client_actions', methods=['GET','POST'])
+def pending_client_actions():
+    global pending_client_actions_list
+    if request.method == 'GET':
+        if pending_client_actions_list:
+            current_client_actions = pending_client_actions_list
+            pending_client_actions_list = []
+            return jsonify(current_client_actions)
+        return '[{"response": "Still Generating..."}]'
+    if request.method == 'POST':
+        if not request.json or not 'response' in request.json:
+            return '[{"response": "Still Generating..."}]'
+        pending_client_actions_list.append(request.json)
+        return request.json.get('response','')
+
+pending_client_actions_list = []
+current_client_actions = []
+
+pending_server_actions_list = []
+current_server_actions = []
+
+
+
+
+if __name__ == '__main__':
+
+    app.run(debug=True)
+

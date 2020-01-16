@@ -12,6 +12,13 @@ warnings.filterwarnings("ignore")
 
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
+
+config = tf.ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = 0.9
+sess = tf.Session(config=config)
+
 
 class GPT2Generator:
     def __init__(self, generate_num=60, temperature=0.4, top_k=40, top_p=0.9, censor=True, force_cpu=False):
