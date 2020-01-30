@@ -202,35 +202,44 @@ def mapping_variation_pairs(mapping):
 
 
 first_to_second_mappings = [
-    ("I'm", "you're"),
-    ("Im", "you're"),
-    ("Ive", "you've"),
-    ("I am", "you are"),
-    ("was I", "were you"),
-    ("am I", "are you"),
-    ("wasn't I", "weren't you"),
-    ("I", "you"),
-    ("I'd", "you'd"),
-    ("i", "you"),
-    ("I've", "you've"),
-    ("was I", "were you"),
-    ("am I", "are you"),
-    ("wasn't I", "weren't you"),
-    ("I", "you"),
-    ("I'd", "you'd"),
-    ("i", "you"),
-    ("I've", "you've"),
-    ("I was", "you were"),
-    ("my", "your"),
-    ("we", "you"),
-    ("we're", "you're"),
-    ("mine", "yours"),
-    ("me", "you"),
-    ("us", "you"),
-    ("our", "your"),
-    ("I'll", "you'll"),
-    ("myself", "yourself"),
-]
+     ("I'm", "you're"),
+     ("Im", "you're"),
+     ("Ive", "you've"),
+     ("I am", "you are"),
+     ("was I", "were you"),
+     ("am I", "are you"),
+     ("wasn't I", "weren't you"),
+     ("I", "you"),
+     ("I'd", "you'd"),
+     ("I've", "you've"),
+     ("was I", "were you"),
+     ("am I", "are you"),
+     ("wasn't I", "weren't you"),
+     ("I'd", "you'd"),
+     ("I've", "you've"),
+     ("I was", "you were"),
+     ("my", "your"),
+     ("we", "you"),
+     ("we're", "you're"),
+     ("mine", "yours"),
+     ("me", "you"),
+     ("us", "you"),
+     ("our", "your"),
+     ("I'll", "you'll"),
+     ("myself", "yourself"),
+ ]
+
+lowercase_first_to_second_mappings = []
+
+for pair in first_to_second_mappings:
+    if "I" in pair[0]:
+        new_pair = []
+        new_pair += pair
+        new_pair[0] = pair[0].replace("I", "i")
+        print(tuple(new_pair))
+        lowercase_first_to_second_mappings.append(tuple(new_pair))
+
+first_to_second_mappings += lowercase_first_to_second_mappings
 
 second_to_first_mappings = [
     ("you're", "I'm"),
