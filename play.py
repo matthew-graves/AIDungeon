@@ -329,7 +329,7 @@ def play_aidungeon_2(args):
                 else:
                     action = action.strip()
 
-                    if "you" not in action[:6].lower() and "I" not in action[:6]:
+                    if "you" not in action[:6].lower() and "i" not in action[:6].lower():
                         action = action[0].lower() + action[1:]
                         action = "You " + action
 
